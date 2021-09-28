@@ -1,9 +1,16 @@
+#Ignore working directories used by IDEs, etc
+.idea/
+.vscode/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+cmd/creator/creator-demo
+cmd/mutator/mutator-demo
+cmd/transitor/transitor-demo
 
 # Test binary, built with `go test -c`
 *.test
