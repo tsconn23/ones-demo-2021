@@ -1,8 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+	"github.com/project-alvarium/ones-demo-2021/internal/bootstrap"
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
+	"github.com/project-alvarium/ones-demo-2021/internal/db"
+	"github.com/project-alvarium/ones-demo-2021/internal/handlers"
 	logConfig "github.com/project-alvarium/provider-logging/pkg/config"
 	logFactory "github.com/project-alvarium/provider-logging/pkg/factories"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
@@ -37,4 +44,35 @@ func main() {
 	logger := logFactory.NewLogger(cfg.Logging)
 	logger.Write(logging.DebugLevel, "config loaded successfully")
 	logger.Write(logging.DebugLevel, cfg.AsString())
+
+	// List of annotators driven from config, eventually support dist. policy.
+	var annotators []interfaces.Annotator
+	for _, t := range cfg.Sdk.Annotators {
+		instance, err := factories.NewAnnotator(t, cfg.Sdk)
+		if err != nil {
+			logger.Error(err.Error())
+			os.Exit(1)
+		}
+		annotators = append(annotators, instance)
+	}
+	sdk := pkg.NewSdk(annotators, cfg.Sdk, logger)
+
+	// Connect to database
+	database, err := db.NewMongoProvider(cfg.Mongo, logger)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	create := handlers.NewCreateLoop(sdk, cfg.Sdk, database, logger)
+	ctx, cancel := context.WithCancel(context.Background())
+	bootstrap.Run(
+		ctx,
+		cancel,
+		cfg,
+		[]bootstrap.BootstrapHandler{
+			sdk.BootstrapHandler,
+			database.BootstrapHandler,
+			create.BootstrapHandler,
+		})
 }
