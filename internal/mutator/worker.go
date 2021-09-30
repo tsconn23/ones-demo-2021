@@ -12,7 +12,7 @@
  * the License.
  *******************************************************************************/
 
-package handlers
+package mutator
 
 import (
 	"context"
@@ -26,7 +26,7 @@ import (
 	"sync"
 )
 
-type Mutator struct {
+type MutateWorker struct {
 	cfg         config.SdkInfo
 	chSubscribe chan []byte
 	db          db.MongoProvider
@@ -34,8 +34,8 @@ type Mutator struct {
 	sdk         interfaces.Sdk
 }
 
-func NewMutator(sdk interfaces.Sdk, chSub chan []byte, cfg config.SdkInfo, db db.MongoProvider, logger logInterface.Logger) Mutator {
-	return Mutator{
+func NewMutateWorker(sdk interfaces.Sdk, chSub chan []byte, cfg config.SdkInfo, db db.MongoProvider, logger logInterface.Logger) MutateWorker {
+	return MutateWorker{
 		cfg:         cfg,
 		chSubscribe: chSub,
 		db:          db,
@@ -44,7 +44,7 @@ func NewMutator(sdk interfaces.Sdk, chSub chan []byte, cfg config.SdkInfo, db db
 	}
 }
 
-func (m *Mutator) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup) bool {
+func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup) bool {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

@@ -8,7 +8,7 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/ones-demo-2021/internal/bootstrap"
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
-	"github.com/project-alvarium/ones-demo-2021/internal/handlers"
+	"github.com/project-alvarium/ones-demo-2021/internal/transitor"
 	logConfig "github.com/project-alvarium/provider-logging/pkg/config"
 	logFactory "github.com/project-alvarium/provider-logging/pkg/factories"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
@@ -58,7 +58,7 @@ func main() {
 
 	// TODO: Implement MUX Router and publish incoming messages via the channel below for handling.
 	chTransit := make(chan []byte)
-	transit := handlers.NewTransit(sdk, chTransit, cfg.Sdk, logger)
+	transit := transitor.NewTransitWorker(sdk, chTransit, cfg.Sdk, logger)
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(
 		ctx,

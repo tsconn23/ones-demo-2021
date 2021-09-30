@@ -9,7 +9,7 @@ import (
 	"github.com/project-alvarium/ones-demo-2021/internal/bootstrap"
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
 	"github.com/project-alvarium/ones-demo-2021/internal/db"
-	"github.com/project-alvarium/ones-demo-2021/internal/handlers"
+	"github.com/project-alvarium/ones-demo-2021/internal/mutator"
 	logConfig "github.com/project-alvarium/provider-logging/pkg/config"
 	logFactory "github.com/project-alvarium/provider-logging/pkg/factories"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
@@ -66,7 +66,7 @@ func main() {
 
 	// TODO: Implement MUX Router and publish incoming messages via the channel below for handling.
 	chMutate := make(chan []byte)
-	mutate := handlers.NewMutator(sdk, chMutate, cfg.Sdk, database, logger)
+	mutate := mutator.NewMutateWorker(sdk, chMutate, cfg.Sdk, database, logger)
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(
 		ctx,

@@ -12,60 +12,47 @@
  * the License.
  *******************************************************************************/
 
-package handlers
+package transitor
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	"github.com/project-alvarium/ones-demo-2021/internal/db"
-	"github.com/project-alvarium/ones-demo-2021/internal/models"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
 	"sync"
-	"time"
 )
 
-type CreateLoop struct {
-	cfg    config.SdkInfo
-	db     db.MongoProvider
-	logger logInterface.Logger
-	sdk    interfaces.Sdk
+type TransitWorker struct {
+	cfg         config.SdkInfo
+	chSubscribe chan []byte
+	logger      logInterface.Logger
+	sdk         interfaces.Sdk
 }
 
-func NewCreateLoop(sdk interfaces.Sdk, cfg config.SdkInfo, db db.MongoProvider, logger logInterface.Logger) CreateLoop {
-	return CreateLoop{
-		cfg:    cfg,
-		db:     db,
-		logger: logger,
-		sdk:    sdk,
+func NewTransitWorker(sdk interfaces.Sdk, chSub chan []byte, cfg config.SdkInfo, logger logInterface.Logger) TransitWorker {
+	return TransitWorker{
+		cfg:         cfg,
+		chSubscribe: chSub,
+		logger:      logger,
+		sdk:         sdk,
 	}
 }
 
-func (c *CreateLoop) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup) bool {
-	cancelled := false
+func (t *TransitWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup) bool {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		for !cancelled {
-			data, err := models.NewSampleData(c.cfg.Signature.PrivateKey)
-			if err != nil {
-				c.logger.Error(err.Error())
-				continue
+		for {
+			msg, ok := <-t.chSubscribe
+			if ok {
+				t.sdk.Transit(ctx, msg)
+			} else { //channel has been closed. End goroutine.
+				t.logger.Write(logging.InfoLevel, "transit::chSubscribe closed, exiting")
+				return
 			}
-			err = c.db.Save(ctx, data)
-			if err != nil {
-				c.logger.Error(err.Error())
-				continue
-			}
-
-			b, _ := json.Marshal(data)
-			c.sdk.Create(context.Background(), b)
-			time.Sleep(1 * time.Second)
 		}
-		c.logger.Write(logging.DebugLevel, "cancel received")
 	}()
 
 	wg.Add(1)
@@ -73,8 +60,7 @@ func (c *CreateLoop) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup) b
 		defer wg.Done()
 
 		<-ctx.Done()
-		c.logger.Write(logging.InfoLevel, "shutdown received")
-		cancelled = true
+		t.logger.Write(logging.InfoLevel, "shutdown received")
 	}()
 	return true
 }
