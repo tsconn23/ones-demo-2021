@@ -30,6 +30,12 @@ type MongoConfig struct {
 	DbName     string `json:"dbName,omitempty"`
 }
 
+type EndpointInfo struct {
+	Certificate string      `json:"certificate,omitempty"`
+	Key         string      `json:"key,omitempty"`
+	Service     ServiceInfo `json:"service,omitempty"`
+}
+
 // ServiceInfo describes a service endpoint that the deployed service is a client of. HTTP or TCP for example.
 type ServiceInfo struct {
 	Host     string `json:"host,omitempty"`
@@ -43,7 +49,7 @@ func (s ServiceInfo) Uri() string {
 }
 
 type ApplicationConfig struct {
-	Endpoint ServiceInfo         `json:"endpoint,omitempty"`
+	Endpoint EndpointInfo        `json:"endpoint,omitempty"`
 	Mongo    MongoConfig         `json:"mongo,omitempty"`
 	Sdk      SdkConfig.SdkInfo   `json:"sdk,omitempty"`
 	Logging  logging.LoggingInfo `json:"logging,omitempty"`

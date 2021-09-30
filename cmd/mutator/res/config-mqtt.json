@@ -40,9 +40,13 @@
     }
   },
   "endpoint": {
-    "host": "0.0.0.0",
-    "port": 8090,
-    "protocol": "http"
+    "certificate": "./res/cert/server.crt",
+    "key": "./res/cert/server.key",
+    "service": {
+      "host": "0.0.0.0",
+      "port": 8090,
+      "protocol": "https"
+    }
   },
   "logging": {
     "minLogLevel": "debug"

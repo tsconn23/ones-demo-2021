@@ -15,14 +15,14 @@ import (
 
 // HttpServer contains references to dependencies required by the http server implementation.
 type HttpServer struct {
-	config  config.ServiceInfo
+	config  config.EndpointInfo
 	dbMongo *db.MongoProvider
 	logger  interfaces.Logger
 	router  *mux.Router
 }
 
 // NewHttpServer is a factory method that returns an initialized HttpServer receiver struct.
-func NewHttpServer(router *mux.Router, config config.ServiceInfo, dbMongo *db.MongoProvider, logger interfaces.Logger) *HttpServer {
+func NewHttpServer(router *mux.Router, config config.EndpointInfo, dbMongo *db.MongoProvider, logger interfaces.Logger) *HttpServer {
 	return &HttpServer{
 		config:  config,
 		dbMongo: dbMongo,
@@ -40,7 +40,7 @@ func (b *HttpServer) BootstrapHandler(
 
 	// this allows env override to explicitly set the value used
 	// for ListenAndServe as needed for different deployments
-	addr := ":" + strconv.Itoa(b.config.Port)
+	addr := ":" + strconv.Itoa(b.config.Service.Port)
 
 	timeout := time.Millisecond * 10000
 	server := &http.Server{
@@ -56,7 +56,7 @@ func (b *HttpServer) BootstrapHandler(
 	go func() {
 		defer wg.Done()
 
-		_ = server.ListenAndServe()
+		_ = server.ListenAndServeTLS(b.config.Certificate, b.config.Key)
 	}()
 
 	wg.Add(1)
