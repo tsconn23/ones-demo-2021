@@ -29,12 +29,12 @@ import (
 
 type CreateWorker struct {
 	cfg    config.SdkInfo
-	db     db.MongoProvider
+	db     *db.MongoProvider
 	logger logInterface.Logger
 	sdk    interfaces.Sdk
 }
 
-func NewCreateWorker(sdk interfaces.Sdk, cfg config.SdkInfo, db db.MongoProvider, logger logInterface.Logger) CreateWorker {
+func NewCreateWorker(sdk interfaces.Sdk, cfg config.SdkInfo, db *db.MongoProvider, logger logInterface.Logger) CreateWorker {
 	return CreateWorker{
 		cfg:    cfg,
 		db:     db,

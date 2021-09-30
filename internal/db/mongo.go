@@ -18,14 +18,14 @@ type MongoProvider struct {
 	logger logInterface.Logger
 }
 
-func NewMongoProvider(cfg config.MongoConfig, logger logInterface.Logger) (MongoProvider, error) {
-	mp := MongoProvider{
+func NewMongoProvider(cfg config.MongoConfig, logger logInterface.Logger) (*MongoProvider, error) {
+	mp := &MongoProvider{
 		cfg:    cfg,
 		logger: logger,
 	}
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mp.buildConnectionString()))
 	if err != nil {
-		return MongoProvider{}, err
+		return &MongoProvider{}, err
 	}
 	mp.client = client
 
@@ -53,6 +53,10 @@ func (mp *MongoProvider) Save(ctx context.Context, item models.SampleData) error
 	}
 	mp.logger.Write(logging.DebugLevel, fmt.Sprintf("Document inserted with ID: %s\n", result.InsertedID))
 	return nil
+}
+
+func (mp *MongoProvider) Close(ctx context.Context) error {
+	return mp.client.Disconnect(ctx)
 }
 
 func (mp *MongoProvider) buildConnectionString() string {

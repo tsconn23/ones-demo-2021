@@ -29,12 +29,12 @@ import (
 type MutateWorker struct {
 	cfg         config.SdkInfo
 	chSubscribe chan []byte
-	db          db.MongoProvider
+	db          *db.MongoProvider
 	logger      logInterface.Logger
 	sdk         interfaces.Sdk
 }
 
-func NewMutateWorker(sdk interfaces.Sdk, chSub chan []byte, cfg config.SdkInfo, db db.MongoProvider, logger logInterface.Logger) MutateWorker {
+func NewMutateWorker(sdk interfaces.Sdk, chSub chan []byte, cfg config.SdkInfo, db *db.MongoProvider, logger logInterface.Logger) MutateWorker {
 	return MutateWorker{
 		cfg:         cfg,
 		chSubscribe: chSub,

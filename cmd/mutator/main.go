@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/gorilla/mux"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
@@ -64,7 +65,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO: Implement MUX Router and publish incoming messages via the channel below for handling.
+	r := mux.NewRouter()
+	mutator.LoadRestRoutes(r, database, logger)
 	chMutate := make(chan []byte)
 	mutate := mutator.NewMutateWorker(sdk, chMutate, cfg.Sdk, database, logger)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -73,6 +75,7 @@ func main() {
 		cancel,
 		cfg,
 		[]bootstrap.BootstrapHandler{
+			mutator.NewHttpServer(r, cfg.Endpoint, database, logger).BootstrapHandler,
 			sdk.BootstrapHandler,
 			database.BootstrapHandler,
 			mutate.BootstrapHandler,

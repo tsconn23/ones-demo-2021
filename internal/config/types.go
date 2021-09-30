@@ -16,7 +16,8 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"fmt"
+	SdkConfig "github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	logging "github.com/project-alvarium/provider-logging/pkg/config"
 )
 
@@ -29,10 +30,23 @@ type MongoConfig struct {
 	DbName     string `json:"dbName,omitempty"`
 }
 
+// ServiceInfo describes a service endpoint that the deployed service is a client of. HTTP or TCP for example.
+type ServiceInfo struct {
+	Host     string `json:"host,omitempty"`
+	Port     int    `json:"port,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
+}
+
+// Uri constructs a string from the populated elements of the ServiceInfo
+func (s ServiceInfo) Uri() string {
+	return fmt.Sprintf("%s://%s:%v", s.Protocol, s.Host, s.Port)
+}
+
 type ApplicationConfig struct {
-	Mongo   MongoConfig         `json:"mongo,omitempty"`
-	Sdk     config.SdkInfo      `json:"sdk,omitempty"`
-	Logging logging.LoggingInfo `json:"logging,omitempty"`
+	Endpoint ServiceInfo         `json:"endpoint,omitempty"`
+	Mongo    MongoConfig         `json:"mongo,omitempty"`
+	Sdk      SdkConfig.SdkInfo   `json:"sdk,omitempty"`
+	Logging  logging.LoggingInfo `json:"logging,omitempty"`
 }
 
 func (a ApplicationConfig) AsString() string {
