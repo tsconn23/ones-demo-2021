@@ -21,6 +21,10 @@ import (
 	logging "github.com/project-alvarium/provider-logging/pkg/config"
 )
 
+const (
+	HeaderValueJson string = "application/json"
+)
+
 type MongoConfig struct {
 	Host       string `json:"host,omitempty"`
 	Port       int    `json:"port,omitempty"`
@@ -51,6 +55,7 @@ func (s ServiceInfo) Uri() string {
 type ApplicationConfig struct {
 	Endpoint EndpointInfo        `json:"endpoint,omitempty"`
 	Mongo    MongoConfig         `json:"mongo,omitempty"`
+	NextHop  ServiceInfo         `json:"nextHop,omitempty"`
 	Sdk      SdkConfig.SdkInfo   `json:"sdk,omitempty"`
 	Logging  logging.LoggingInfo `json:"logging,omitempty"`
 }

@@ -14,17 +14,19 @@ import (
 
 // HttpServer contains references to dependencies required by the http server implementation.
 type HttpServer struct {
-	config config.EndpointInfo
-	logger interfaces.Logger
-	router *mux.Router
+	config    config.EndpointInfo
+	logger    interfaces.Logger
+	router    *mux.Router
+	chPublish chan []byte
 }
 
 // NewHttpServer is a factory method that returns an initialized HttpServer receiver struct.
-func NewHttpServer(router *mux.Router, config config.EndpointInfo, logger interfaces.Logger) *HttpServer {
+func NewHttpServer(router *mux.Router, pub chan []byte, config config.EndpointInfo, logger interfaces.Logger) *HttpServer {
 	return &HttpServer{
-		config: config,
-		logger: logger,
-		router: router,
+		config:    config,
+		logger:    logger,
+		router:    router,
+		chPublish: pub,
 	}
 }
 
@@ -53,7 +55,11 @@ func (b *HttpServer) BootstrapHandler(
 	go func() {
 		defer wg.Done()
 
-		_ = server.ListenAndServeTLS(b.config.Certificate, b.config.Key)
+		if len(b.config.Certificate) > 0 {
+			_ = server.ListenAndServeTLS(b.config.Certificate, b.config.Key)
+		} else {
+			_ = server.ListenAndServe()
+		}
 	}()
 
 	wg.Add(1)
@@ -64,6 +70,7 @@ func (b *HttpServer) BootstrapHandler(
 		//DEBUG
 		b.logger.Write(logging.InfoLevel, "Web server shutting down")
 		_ = server.Shutdown(ctx)
+		close(b.chPublish)
 		//DEBUG
 		b.logger.Write(logging.InfoLevel, "Web server shut down")
 	}()

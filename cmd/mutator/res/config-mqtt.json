@@ -7,8 +7,13 @@
     "collection": "sampleData",
     "dbName": "AlvariumDB"
   },
+  "nextHop": {
+    "host": "0.0.0.0",
+    "port": 8091,
+    "protocol": "https"
+  },
   "sdk" : {
-    "annotators": ["tpm","pki"],
+    "annotators": ["tpm","pki","tls"],
     "hash": {
       "type": "sha256"
     },

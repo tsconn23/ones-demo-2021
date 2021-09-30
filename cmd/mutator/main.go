@@ -66,16 +66,16 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	mutator.LoadRestRoutes(r, database, logger)
 	chMutate := make(chan []byte)
-	mutate := mutator.NewMutateWorker(sdk, chMutate, cfg.Sdk, database, logger)
+	mutator.LoadRestRoutes(r, chMutate, logger)
+	mutate := mutator.NewMutateWorker(sdk, chMutate, cfg.Sdk, cfg.NextHop, database, logger)
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(
 		ctx,
 		cancel,
 		cfg,
 		[]bootstrap.BootstrapHandler{
-			mutator.NewHttpServer(r, cfg.Endpoint, database, logger).BootstrapHandler,
+			mutator.NewHttpServer(r, chMutate, cfg.Endpoint, database, logger).BootstrapHandler,
 			sdk.BootstrapHandler,
 			database.BootstrapHandler,
 			mutate.BootstrapHandler,

@@ -58,8 +58,8 @@ func main() {
 	sdk := pkg.NewSdk(annotators, cfg.Sdk, logger)
 
 	r := mux.NewRouter()
-	transitor.LoadRestRoutes(r, logger)
 	chTransit := make(chan []byte)
+	transitor.LoadRestRoutes(r, chTransit, logger)
 	transit := transitor.NewTransitWorker(sdk, chTransit, cfg.Sdk, logger)
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(
@@ -67,7 +67,7 @@ func main() {
 		cancel,
 		cfg,
 		[]bootstrap.BootstrapHandler{
-			transitor.NewHttpServer(r, cfg.Endpoint, logger).BootstrapHandler,
+			transitor.NewHttpServer(r, chTransit, cfg.Endpoint, logger).BootstrapHandler,
 			sdk.BootstrapHandler,
 			transit.BootstrapHandler,
 		})

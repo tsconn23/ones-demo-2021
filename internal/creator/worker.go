@@ -15,31 +15,37 @@
 package creator
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	SdkConfig "github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+	"github.com/project-alvarium/ones-demo-2021/internal/config"
 	"github.com/project-alvarium/ones-demo-2021/internal/db"
 	"github.com/project-alvarium/ones-demo-2021/internal/models"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
+	"net/http"
 	"sync"
 	"time"
 )
 
 type CreateWorker struct {
-	cfg    config.SdkInfo
+	cfg    SdkConfig.SdkInfo
 	db     *db.MongoProvider
 	logger logInterface.Logger
 	sdk    interfaces.Sdk
+	svc    config.ServiceInfo
 }
 
-func NewCreateWorker(sdk interfaces.Sdk, cfg config.SdkInfo, db *db.MongoProvider, logger logInterface.Logger) CreateWorker {
+func NewCreateWorker(sdk interfaces.Sdk, cfg SdkConfig.SdkInfo, mutate config.ServiceInfo, db *db.MongoProvider, logger logInterface.Logger) CreateWorker {
 	return CreateWorker{
 		cfg:    cfg,
 		db:     db,
 		logger: logger,
 		sdk:    sdk,
+		svc:    mutate,
 	}
 }
 
@@ -55,6 +61,7 @@ func (c *CreateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 				c.logger.Error(err.Error())
 				continue
 			}
+			//Save the data
 			err = c.db.Save(ctx, data)
 			if err != nil {
 				c.logger.Error(err.Error())
@@ -62,7 +69,21 @@ func (c *CreateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 			}
 
 			b, _ := json.Marshal(data)
-			c.sdk.Create(context.Background(), b)
+			//Annotate the data
+			c.sdk.Create(ctx, b)
+
+			//Send data to the next service
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+			client := &http.Client{Transport: tr}
+			resp, err := client.Post(c.svc.Uri()+"/data", config.HeaderValueJson, bytes.NewBuffer(b))
+			if err != nil {
+				c.logger.Error(err.Error())
+			} else {
+				//c.logger.Write(logging.DebugLevel,fmt.Sprintf("posted to mutator (%s/data): %s", c.svc.Uri(), string(b)))
+				resp.Body.Close()
+			}
 			time.Sleep(1 * time.Second)
 		}
 		c.logger.Write(logging.DebugLevel, "cancel received")

@@ -1,6 +1,6 @@
 {
   "sdk" : {
-    "annotators": ["tpm","pki"],
+    "annotators": ["tpm","pki","tls"],
     "hash": {
       "type": "sha256"
     },

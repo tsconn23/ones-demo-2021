@@ -47,6 +47,7 @@ func (t *TransitWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup
 		for {
 			msg, ok := <-t.chSubscribe
 			if ok {
+				//Annotate the data
 				t.sdk.Transit(ctx, msg)
 			} else { //channel has been closed. End goroutine.
 				t.logger.Write(logging.InfoLevel, "transit::chSubscribe closed, exiting")

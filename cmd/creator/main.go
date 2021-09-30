@@ -64,7 +64,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	create := creator.NewCreateWorker(sdk, cfg.Sdk, database, logger)
+	create := creator.NewCreateWorker(sdk, cfg.Sdk, cfg.NextHop, database, logger)
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(
 		ctx,

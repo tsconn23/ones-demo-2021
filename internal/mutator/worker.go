@@ -15,32 +15,38 @@
 package mutator
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	SdkConfig "github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+	"github.com/project-alvarium/ones-demo-2021/internal/config"
 	"github.com/project-alvarium/ones-demo-2021/internal/db"
 	"github.com/project-alvarium/ones-demo-2021/internal/models"
 	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
+	"net/http"
 	"sync"
 )
 
 type MutateWorker struct {
-	cfg         config.SdkInfo
+	cfg         SdkConfig.SdkInfo
 	chSubscribe chan []byte
 	db          *db.MongoProvider
 	logger      logInterface.Logger
 	sdk         interfaces.Sdk
+	svc         config.ServiceInfo
 }
 
-func NewMutateWorker(sdk interfaces.Sdk, chSub chan []byte, cfg config.SdkInfo, db *db.MongoProvider, logger logInterface.Logger) MutateWorker {
+func NewMutateWorker(sdk interfaces.Sdk, chSub chan []byte, cfg SdkConfig.SdkInfo, transit config.ServiceInfo, db *db.MongoProvider, logger logInterface.Logger) MutateWorker {
 	return MutateWorker{
 		cfg:         cfg,
 		chSubscribe: chSub,
 		db:          db,
 		logger:      logger,
 		sdk:         sdk,
+		svc:         transit,
 	}
 }
 
@@ -57,6 +63,7 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 					m.logger.Error(err.Error())
 					continue
 				}
+				//Save the data
 				err = m.db.Save(ctx, data)
 				if err != nil {
 					m.logger.Error(err.Error())
@@ -64,7 +71,19 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 				}
 
 				b, _ := json.Marshal(data)
+				//Annotate the data
 				m.sdk.Mutate(ctx, msg, b)
+				//Send data to the next service
+				tr := &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}
+				client := &http.Client{Transport: tr}
+				resp, err := client.Post(m.svc.Uri()+"/data", config.HeaderValueJson, bytes.NewBuffer(b))
+				if err != nil {
+					m.logger.Error(err.Error())
+				} else {
+					resp.Body.Close()
+				}
 			} else { //channel has been closed. End goroutine.
 				m.logger.Write(logging.InfoLevel, "mutator::chSubscribe closed, exiting")
 				return
