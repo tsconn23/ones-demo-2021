@@ -18,7 +18,7 @@
       "type": "mqtt",
       "config": {
         "clientId": "alvarium-test",
-        "qos": 0,
+        "qos": 2,
         "user": "mosquitto",
         "password": "",
         "provider": {

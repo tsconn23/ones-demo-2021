@@ -58,11 +58,16 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 		for {
 			msg, ok := <-m.chSubscribe
 			if ok {
+				//Annotate receipt of the old data
+				m.sdk.Transit(ctx, msg)
+
+				//Create new/transformed data
 				data, err := models.NewSampleData(m.cfg.Signature.PrivateKey)
 				if err != nil {
 					m.logger.Error(err.Error())
 					continue
 				}
+
 				//Save the data
 				err = m.db.Save(ctx, data)
 				if err != nil {
@@ -71,7 +76,7 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 				}
 
 				b, _ := json.Marshal(data)
-				//Annotate the data
+				//Annotate the data, linking new to old
 				m.sdk.Mutate(ctx, msg, b)
 				//Send data to the next service
 				tr := &http.Transport{

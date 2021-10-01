@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
-	"github.com/project-alvarium/provider-logging/pkg/interfaces"
+	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
 	"github.com/project-alvarium/provider-logging/pkg/logging"
 	"net/http"
 	"strconv"
@@ -14,19 +14,17 @@ import (
 
 // HttpServer contains references to dependencies required by the http server implementation.
 type HttpServer struct {
-	config    config.EndpointInfo
-	logger    interfaces.Logger
-	router    *mux.Router
-	chPublish chan []byte
+	config config.EndpointInfo
+	logger logInterface.Logger
+	router *mux.Router
 }
 
 // NewHttpServer is a factory method that returns an initialized HttpServer receiver struct.
-func NewHttpServer(router *mux.Router, pub chan []byte, config config.EndpointInfo, logger interfaces.Logger) *HttpServer {
+func NewHttpServer(router *mux.Router, config config.EndpointInfo, logger logInterface.Logger) *HttpServer {
 	return &HttpServer{
-		config:    config,
-		logger:    logger,
-		router:    router,
-		chPublish: pub,
+		config: config,
+		logger: logger,
+		router: router,
 	}
 }
 
@@ -70,7 +68,6 @@ func (b *HttpServer) BootstrapHandler(
 		//DEBUG
 		b.logger.Write(logging.InfoLevel, "Web server shutting down")
 		_ = server.Shutdown(ctx)
-		close(b.chPublish)
 		//DEBUG
 		b.logger.Write(logging.InfoLevel, "Web server shut down")
 	}()
