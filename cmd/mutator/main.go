@@ -67,7 +67,7 @@ func main() {
 
 	r := mux.NewRouter()
 	chMutate := make(chan []byte)
-	mutator.LoadRestRoutes(r, chMutate, logger)
+	mutator.LoadRestRoutes(r, sdk, chMutate, logger)
 	mutate := mutator.NewMutateWorker(sdk, chMutate, cfg.Sdk, cfg.NextHop, database, logger)
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(

@@ -58,9 +58,6 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 		for {
 			msg, ok := <-m.chSubscribe
 			if ok {
-				//Annotate receipt of the old data
-				m.sdk.Transit(ctx, msg)
-
 				//Create new/transformed data
 				data, err := models.NewSampleData(m.cfg.Signature.PrivateKey)
 				if err != nil {

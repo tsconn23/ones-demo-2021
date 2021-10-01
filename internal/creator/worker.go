@@ -85,7 +85,7 @@ func (c *CreateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 				resp.Body.Close()
 			}
 			time.Sleep(1 * time.Second)
-			cancelled = true
+			// cancelled = true /* Uncomment if you just want to run through a single pass */
 		}
 		c.logger.Write(logging.DebugLevel, "cancel received")
 	}()
