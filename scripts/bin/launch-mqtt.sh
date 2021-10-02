@@ -11,17 +11,17 @@ function cleanup {
 }
 
 cd $CMD/transitor
-exec -a ones-demo-transitor ./transitor-demo  -cfg ./res/config.json &
+exec -a ones-demo-transitor ./transitor-demo  -cfg ./res/config-mqtt.json &
 cd $DIR
 sleep 1
 
 cd $CMD/mutator
-exec -a ones-demo-mutator ./mutator-demo  -cfg ./res/config.json &
+exec -a ones-demo-mutator ./mutator-demo  -cfg ./res/config-mqtt.json &
 cd $DIR
 sleep 1
 
 cd $CMD/creator
-exec -a ones-demo-creator ./creator-demo  -cfg ./res/config.json &
+exec -a ones-demo-creator ./creator-demo  -cfg ./res/config-mqtt.json &
 cd $DIR
 
 trap cleanup EXIT

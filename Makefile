@@ -1,4 +1,4 @@
-.PHONY: build test run
+.PHONY: build test run run_mqtt
 
 MICROSERVICES=cmd/creator/creator-demo \
 				cmd/mutator/mutator-demo \
@@ -23,6 +23,9 @@ cmd/transitor/transitor-demo:
 
 run:
 	cd scripts/bin && ./launch.sh
+
+run_mqtt:
+	cd scripts/bin && ./launch-mqtt.sh
 
 test:
 	go test -cover ./...
