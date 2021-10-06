@@ -63,6 +63,7 @@ func postReceiveDataHandler(w http.ResponseWriter, r *http.Request, sdk interfac
 	ctx := context.WithValue(r.Context(), contracts.AnnotationTLS, r.TLS)
 	sdk.Transit(ctx, b)
 
+	r.Close = true
 	w.WriteHeader(http.StatusAccepted)
 	return
 }

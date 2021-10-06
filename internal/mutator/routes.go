@@ -64,6 +64,7 @@ func postReceiveDataHandler(w http.ResponseWriter, r *http.Request, sdk interfac
 	sdk.Transit(ctx, b)
 	pub <- b
 
+	r.Close = true
 	w.WriteHeader(http.StatusAccepted)
 	return
 }

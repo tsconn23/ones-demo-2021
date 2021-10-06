@@ -77,6 +77,7 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 				m.sdk.Mutate(ctx, msg, b)
 				//Send data to the next service
 				tr := &http.Transport{
+					DisableKeepAlives: true,
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 				}
 				client := &http.Client{Transport: tr}
