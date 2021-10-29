@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/gorilla/mux v1.8.0
 	github.com/oklog/ulid/v2 v2.0.2
-	github.com/project-alvarium/alvarium-sdk-go v0.0.0-20211003174824-16bd9f306d79
+	github.com/project-alvarium/alvarium-sdk-go v0.0.0-20211029200807-884bf5e97c4d
 	github.com/project-alvarium/provider-logging v0.0.0-20210720200405-d8d2146a4f14
 	go.mongodb.org/mongo-driver v1.7.2
 )
