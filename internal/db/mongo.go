@@ -60,5 +60,5 @@ func (mp *MongoProvider) Close(ctx context.Context) error {
 }
 
 func (mp *MongoProvider) buildConnectionString() string {
-	return fmt.Sprintf("mongodb://%s:%v", mp.cfg.Host, mp.cfg.Port)
+	return fmt.Sprintf("mongodb://%s:%s@%s:%v", mp.cfg.Username, mp.cfg.Password, mp.cfg.Host, mp.cfg.Port)
 }
