@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	SdkConfig "github.com/project-alvarium/alvarium-sdk-go/pkg/config"
-	logging "github.com/project-alvarium/provider-logging/pkg/config"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/logging"
 )
 
 const (

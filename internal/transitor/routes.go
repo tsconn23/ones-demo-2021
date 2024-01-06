@@ -8,14 +8,13 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/ones-demo-2021/internal/models"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
-	"github.com/project-alvarium/provider-logging/pkg/logging"
 	"io/ioutil"
+	"log/slog"
 	"net/http"
 	"time"
 )
 
-func LoadRestRoutes(r *mux.Router, sdk interfaces.Sdk, logger logInterface.Logger) {
+func LoadRestRoutes(r *mux.Router, sdk interfaces.Sdk, logger interfaces.Logger) {
 	r.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) {
 			getIndexHandler(w, r, logger)
@@ -26,17 +25,17 @@ func LoadRestRoutes(r *mux.Router, sdk interfaces.Sdk, logger logInterface.Logge
 	}).Methods(http.MethodPost)
 }
 
-func getIndexHandler(w http.ResponseWriter, r *http.Request, logger logInterface.Logger) {
+func getIndexHandler(w http.ResponseWriter, r *http.Request, logger interfaces.Logger) {
 	defer r.Body.Close()
 	start := time.Now()
 	w.Header().Add("Content-Type", "text/html")
 	w.Write([]byte("<html><head><title>Transitor API</title></head><body><h2>Transitor API</h2></body></html>"))
 
 	elapsed := time.Now().Sub(start)
-	logger.Write(logging.TraceLevel, fmt.Sprintf("getIndexHandler OK %v", elapsed))
+	logger.Write(slog.LevelDebug, fmt.Sprintf("getIndexHandler OK %v", elapsed))
 }
 
-func postReceiveDataHandler(w http.ResponseWriter, r *http.Request, sdk interfaces.Sdk, logger logInterface.Logger) {
+func postReceiveDataHandler(w http.ResponseWriter, r *http.Request, sdk interfaces.Sdk, logger interfaces.Logger) {
 	if r.Body != nil {
 		defer func() { _ = r.Body.Close() }()
 	}

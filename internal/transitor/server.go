@@ -3,9 +3,9 @@ package transitor
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
-	"github.com/project-alvarium/provider-logging/pkg/logging"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"sync"
@@ -15,12 +15,12 @@ import (
 // HttpServer contains references to dependencies required by the http server implementation.
 type HttpServer struct {
 	config config.EndpointInfo
-	logger logInterface.Logger
+	logger interfaces.Logger
 	router *mux.Router
 }
 
 // NewHttpServer is a factory method that returns an initialized HttpServer receiver struct.
-func NewHttpServer(router *mux.Router, config config.EndpointInfo, logger logInterface.Logger) *HttpServer {
+func NewHttpServer(router *mux.Router, config config.EndpointInfo, logger interfaces.Logger) *HttpServer {
 	return &HttpServer{
 		config: config,
 		logger: logger,
@@ -47,7 +47,7 @@ func (b *HttpServer) BootstrapHandler(
 		ReadTimeout:  timeout,
 	}
 
-	b.logger.Write(logging.InfoLevel, "Web server starting ("+addr+")")
+	b.logger.Write(slog.LevelInfo, "Web server starting ("+addr+")")
 
 	wg.Add(1)
 	go func() {
@@ -66,10 +66,10 @@ func (b *HttpServer) BootstrapHandler(
 
 		<-ctx.Done()
 		//DEBUG
-		b.logger.Write(logging.InfoLevel, "Web server shutting down")
+		b.logger.Write(slog.LevelInfo, "Web server shutting down")
 		_ = server.Shutdown(ctx)
 		//DEBUG
-		b.logger.Write(logging.InfoLevel, "Web server shut down")
+		b.logger.Write(slog.LevelInfo, "Web server shut down")
 	}()
 
 	return true

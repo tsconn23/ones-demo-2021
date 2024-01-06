@@ -24,8 +24,7 @@ import (
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
 	"github.com/project-alvarium/ones-demo-2021/internal/db"
 	"github.com/project-alvarium/ones-demo-2021/internal/models"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
-	"github.com/project-alvarium/provider-logging/pkg/logging"
+	"log/slog"
 	"net/http"
 	"sync"
 )
@@ -34,12 +33,12 @@ type MutateWorker struct {
 	cfg         SdkConfig.SdkInfo
 	chSubscribe chan []byte
 	db          *db.MongoProvider
-	logger      logInterface.Logger
+	logger      interfaces.Logger
 	sdk         interfaces.Sdk
 	svc         config.ServiceInfo
 }
 
-func NewMutateWorker(sdk interfaces.Sdk, chSub chan []byte, cfg SdkConfig.SdkInfo, transit config.ServiceInfo, db *db.MongoProvider, logger logInterface.Logger) MutateWorker {
+func NewMutateWorker(sdk interfaces.Sdk, chSub chan []byte, cfg SdkConfig.SdkInfo, transit config.ServiceInfo, db *db.MongoProvider, logger interfaces.Logger) MutateWorker {
 	return MutateWorker{
 		cfg:         cfg,
 		chSubscribe: chSub,
@@ -78,7 +77,7 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 				//Send data to the next service
 				tr := &http.Transport{
 					DisableKeepAlives: true,
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+					TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
 				}
 				client := &http.Client{Transport: tr}
 				resp, err := client.Post(m.svc.Uri()+"/data", config.HeaderValueJson, bytes.NewBuffer(b))
@@ -88,7 +87,7 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 					resp.Body.Close()
 				}
 			} else { //channel has been closed. End goroutine.
-				m.logger.Write(logging.InfoLevel, "mutator::chSubscribe closed, exiting")
+				m.logger.Write(slog.LevelInfo, "mutator::chSubscribe closed, exiting")
 				return
 			}
 		}
@@ -99,7 +98,7 @@ func (m *MutateWorker) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 		defer wg.Done()
 
 		<-ctx.Done()
-		m.logger.Write(logging.InfoLevel, "shutdown received")
+		m.logger.Write(slog.LevelInfo, "shutdown received")
 	}()
 	return true
 }
