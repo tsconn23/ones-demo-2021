@@ -4,9 +4,9 @@ import (
 	"context"
 	"flag"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg"
+	SdkConfig "github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/logging"
 	"github.com/project-alvarium/ones-demo-2021/internal/bootstrap"
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
 	"github.com/project-alvarium/ones-demo-2021/internal/creator"
@@ -27,7 +27,7 @@ func main() {
 	fileFormat := config.GetFileExtension(configPath)
 	reader, err := config.NewReader(fileFormat)
 	if err != nil {
-		tmpLog := factories.NewLogger(logging.LoggingInfo{MinLogLevel: slog.LevelError})
+		tmpLog := factories.NewLogger(SdkConfig.LoggingInfo{MinLogLevel: slog.LevelError})
 		tmpLog.Error(err.Error())
 		os.Exit(1)
 	}
@@ -35,7 +35,7 @@ func main() {
 	cfg := config.ApplicationConfig{}
 	err = reader.Read(configPath, &cfg)
 	if err != nil {
-		tmpLog := factories.NewLogger(logging.LoggingInfo{MinLogLevel: slog.LevelError})
+		tmpLog := factories.NewLogger(SdkConfig.LoggingInfo{MinLogLevel: slog.LevelError})
 		tmpLog.Error(err.Error())
 		os.Exit(1)
 	}
