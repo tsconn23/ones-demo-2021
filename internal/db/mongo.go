@@ -3,22 +3,22 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/ones-demo-2021/internal/config"
 	"github.com/project-alvarium/ones-demo-2021/internal/models"
-	logInterface "github.com/project-alvarium/provider-logging/pkg/interfaces"
-	"github.com/project-alvarium/provider-logging/pkg/logging"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log/slog"
 	"sync"
 )
 
 type MongoProvider struct {
 	cfg    config.MongoConfig
 	client *mongo.Client
-	logger logInterface.Logger
+	logger interfaces.Logger
 }
 
-func NewMongoProvider(cfg config.MongoConfig, logger logInterface.Logger) (*MongoProvider, error) {
+func NewMongoProvider(cfg config.MongoConfig, logger interfaces.Logger) (*MongoProvider, error) {
 	mp := &MongoProvider{
 		cfg:    cfg,
 		logger: logger,
@@ -38,7 +38,7 @@ func (mp *MongoProvider) BootstrapHandler(ctx context.Context, wg *sync.WaitGrou
 		defer wg.Done()
 
 		<-ctx.Done()
-		mp.logger.Write(logging.InfoLevel, "shutdown received")
+		mp.logger.Write(slog.LevelInfo, "shutdown received")
 		mp.client.Disconnect(ctx)
 	}()
 	return true
@@ -51,7 +51,7 @@ func (mp *MongoProvider) Save(ctx context.Context, item models.SampleData) error
 	if err != nil {
 		return err
 	}
-	mp.logger.Write(logging.DebugLevel, fmt.Sprintf("Document inserted with ID: %s\n", result.InsertedID))
+	mp.logger.Write(slog.LevelDebug, fmt.Sprintf("Document inserted with ID: %s\n", result.InsertedID))
 	return nil
 }
 

@@ -14,6 +14,7 @@
 /*
 	Package bootstrap contains all abstractions and implementation necessary to bootstrap the application.
 */
+
 package bootstrap
 
 import (
